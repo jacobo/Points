@@ -1,7 +1,13 @@
-<script src="../Points.js"></script>
 <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js#startOpened"></script>
+<script src="../Points.js"></script>
 
 <script type="text/javascript">
+  try {
+    window.polyfillPointerEvents();
+  } catch (e) {
+    console.log(e);
+  }
+  console.log("now add some listeners...");
   document.addEventListener("pointerdown", function(){ console.log("addEventListener pointerdown") });
   document.addEventListener("mousedown", function(){ console.log("addEventListener mousedown") });
 </script>
