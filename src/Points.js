@@ -4,12 +4,7 @@ window.polyfillPointerEvents = function () {
 
   console.log("polyfillPointerEvents...");
 
-  var activePointers,
-  numActivePointers,
-  recentTouchStarts,
-  mouseDefaults,
-  mouseEvents,
-  i,
+  var i,
   setUpMouseEvent,
   createUIEvent,
   createEvent,
@@ -23,29 +18,13 @@ window.polyfillPointerEvents = function () {
   pointerEventProperties = 'screenX screenY clientX clientY ctrlKey shiftKey altKey metaKey relatedTarget detail button buttons pointerId pointerType width height pressure tiltX tiltY isPrimary'.split( ' ' );
 
   // Can we create events using the MouseEvent constructor? If so, gravy
-  try {
-    i = new UIEvent( 'test' );
-
-    createUIEvent = function ( type, bubbles ) {
-      return new UIEvent( type, { view: window, bubbles: bubbles });
-    };
-
-    // otherwise we need to do things oldschool
-  } catch ( err ) {
-    if ( document.createEvent ) {
-      console.log("oldschool it is...")
       createUIEvent = function ( type, bubbles ) {
         var pointerEvent = document.createEvent( 'UIEvents' );
         pointerEvent.initUIEvent( type, bubbles, true, window, 1 );
 
         return pointerEvent;
       };
-    }
-  }
 
-  if ( !createUIEvent ) {
-    throw new Error( 'Cannot create events. You may be using an unsupported browser.' );
-  }
 
   createEvent = function ( type, originalEvent, params, noBubble ) {
     var pointerEvent, i;
@@ -72,7 +51,6 @@ window.polyfillPointerEvents = function () {
 
     return pointerEvent;
   };
-  console.log("createEvent defined");
 
 
   // https://dvcs.w3.org/hg/pointerevents/raw-file/tip/pointerEvents.html#dfn-chorded-buttons
@@ -83,8 +61,6 @@ window.polyfillPointerEvents = function () {
   };
 
   createMouseProxyEvent = function ( type, originalEvent, noBubble ) {
-    console.log("createMouseProxyEvent")
-    console.log(type)
     var button, buttons, pressure, params, mouseEventParams, pointerEventParams;
 
     // normalise button and buttons
@@ -140,18 +116,7 @@ window.polyfillPointerEvents = function () {
       return createEvent( type, originalEvent, params, noBubble );
     };
 
-    console.log("createMouseProxyEvent defined")
-
-    // Some mouse events are real, others are simulated based on touch events.
-    // We only want the real ones, or we'll end up firing our load at
-    // inappropriate moments.
-    //
-    // Surprisingly, the coordinates of the mouse event won't exactly correspond
-    // with the touchstart that originated them, so we need to be a bit fuzzy.
-
-
     setUpMouseEvent = function ( type ) {
-      console.log("setUpMouseEvent " + type);
       if ( type === 'over' || type === 'out' ) {
         window.addEventListener( 'mouse' + type, function ( originalEvent ) {
           var pointerEvent;
@@ -167,32 +132,17 @@ window.polyfillPointerEvents = function () {
       }
 
       else {
-        console.log("addEventListener + mouse" + type);
         window.addEventListener( 'mouse' + type, function ( originalEvent ) {
           try {
-          
-            if (type == "down"){
-              console.log("handling event")
-              console.log(originalEvent)
-            }
             var pointerEvent;
-
             pointerEvent = createMouseProxyEvent( 'pointer' + type, originalEvent );
-            console.log("dispatching event")
-            console.log(originalEvent)
             originalEvent.target.dispatchEvent( pointerEvent );
-
           } catch(e) {
             console.log(e)
           }
         });
       }
     };
-    console.log("setUpMouseEvent defined");
-
-    var stuff = [ 'down', 'up', 'over', 'out', 'move' ];
-
-    console.log(stuff);
 
     // [ 'down', 'up', 'over', 'out', 'move' ].forEach( function ( eventType ) {
     //   setUpMouseEvent( eventType );
@@ -201,7 +151,6 @@ window.polyfillPointerEvents = function () {
     [ 'down', 'up', 'over', 'out' ].forEach( function ( eventType ) {
       setUpMouseEvent( eventType );
     });
-    console.log("setUpMouseEvent called for all the important things....")
 
     // Single preventDefault function - no point recreating it over and over
     function preventDefault () {
