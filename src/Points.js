@@ -2,8 +2,6 @@ window.polyfillPointerEvents = function () {
 
   'use strict';
 
-  console.log("polyfillPointerEvents...");
-
   var i,
   setUpMouseEvent,
   createUIEvent,
@@ -17,13 +15,12 @@ window.polyfillPointerEvents = function () {
 
   pointerEventProperties = 'screenX screenY clientX clientY ctrlKey shiftKey altKey metaKey relatedTarget detail button buttons pointerId pointerType width height pressure tiltX tiltY isPrimary'.split( ' ' );
 
-  // Can we create events using the MouseEvent constructor? If so, gravy
-      createUIEvent = function ( type, bubbles ) {
-        var pointerEvent = document.createEvent( 'UIEvents' );
-        pointerEvent.initUIEvent( type, bubbles, true, window, 1 );
+  createUIEvent = function ( type, bubbles ) {
+    var pointerEvent = document.createEvent( 'UIEvents' );
+    pointerEvent.initUIEvent( type, bubbles, true, window, 1 );
 
-        return pointerEvent;
-      };
+    return pointerEvent;
+  };
 
 
   createEvent = function ( type, originalEvent, params, noBubble ) {
@@ -63,26 +60,12 @@ window.polyfillPointerEvents = function () {
   createMouseProxyEvent = function ( type, originalEvent, noBubble ) {
     var button, buttons, pressure, params, mouseEventParams, pointerEventParams;
 
-    // normalise button and buttons
-    if ( originalEvent.buttons !== undefined ) {
-      buttons = originalEvent.buttons;
-      button = !originalEvent.buttons ? -1 : originalEvent.button;
-    }
-
-    else {
-      if ( event.button === 0 && event.which === 0 ) {
-        button = -1;
-        buttons = 0;
-      } else {
-        button = originalEvent.button;
-        buttons = buttonsMap[ button ];
-      }
-    }
+    button = originalEvent.button;
+    buttons = originalEvent.buttons;
 
     // Pressure is 0.5 for buttons down, 0 for no buttons down (unless pressure is
       // reported, obvs)
       pressure = originalEvent.pressure || originalEvent.mozPressure || ( buttons ? 0.5 : 0 );
-
 
       // This is the quickest way to copy event parameters. You can't enumerate
       // over event properties in Firefox (possibly elsewhere), so a traditional
@@ -130,7 +113,6 @@ window.polyfillPointerEvents = function () {
           }
         });
       }
-
       else {
         window.addEventListener( 'mouse' + type, function ( originalEvent ) {
           try {
@@ -144,11 +126,7 @@ window.polyfillPointerEvents = function () {
       }
     };
 
-    // [ 'down', 'up', 'over', 'out', 'move' ].forEach( function ( eventType ) {
-    //   setUpMouseEvent( eventType );
-    // });
-
-    [ 'down', 'up', 'over', 'out' ].forEach( function ( eventType ) {
+    [ 'down', 'up', 'over', 'out', 'move' ].forEach( function ( eventType ) {
       setUpMouseEvent( eventType );
     });
 
@@ -158,5 +136,4 @@ window.polyfillPointerEvents = function () {
     }
 
     // TODO stopPropagation?
-
 }
